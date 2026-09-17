@@ -1,0 +1,32 @@
+name: Unzip File Automatically
+on:
+  push:
+    paths:
+      - '**.zip'
+  workflow_dispatch:
+
+jobs:
+  unzip:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Extract ZIP files
+        run: |
+          for file in *.zip; do
+            if [ -f "$file" ]; then
+              unzip -o "$file" -d .
+              rm "$file"
+            fi
+          done
+
+      - name: Commit extracted files
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add .
+          git commit -m "Extract ZIP file content" || exit 0
+          git push
